@@ -5,6 +5,10 @@ import { MenuService } from './shared/menu.service';
 import { DishView } from '../shared/viewModels/interfaces';
 import { Filter, Pageable } from '../shared/backendModels/interfaces';
 import { map } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import { AppState } from 'app/store/reducers';
+import { getAllDishes } from './store/reducers/menu.reducer';
+import { LoadMenuStart } from './store/actions/menu.actions';
 
 export interface Filters {
   searchBy: string;
@@ -21,9 +25,12 @@ export interface Filters {
   styleUrls: ['./menu.component.scss'],
 })
 export class MenuComponent {
-  dishes$: Observable<DishView[]>;
+  dishes$: Observable<DishView[]> = this.store.select(getAllDishes);
 
-  constructor(private menuService: MenuService) {}
+  constructor(
+    private store: Store<AppState>,
+    private menuService: MenuService,
+    ) {}
 
   onFilterChange(filters: FilterFormData): void {
     const pageable: Pageable = {
@@ -40,14 +47,17 @@ export class MenuComponent {
       pageable,
       filters,
     );
-    this.dishes$ = this.menuService.getDishes(composedFilters).pipe(
-      map((res) => {
-        if (!res) {
-          return [];
-        } else {
-          return res.content;
-        }
-      }),
-    );
+
+    this.store.dispatch(new LoadMenuStart(composedFilters));
+
+    // this.dishes$ = this.menuService.getDishes(composedFilters).pipe(
+    //   map((res) => {
+    //     if (!res) {
+    //       return [];
+    //     } else {
+    //       return res.content;
+    //     }
+    //   }),
+    // );
   }
 }

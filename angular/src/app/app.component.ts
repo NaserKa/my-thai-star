@@ -8,6 +8,12 @@ import { find } from 'lodash';
 import { config } from './config';
 import { fadeAnimation } from './animations/fade.animation';
 import * as moment from 'moment';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+
+interface AppState{
+  message: string;
+}
 
 @Component({
   selector: 'public-main',
@@ -15,16 +21,21 @@ import * as moment from 'moment';
   styleUrls: ['./app.component.scss'],
   animations: [fadeAnimation], // register the animation
 })
+
 export class AppComponent {
+  message$: Observable<string>;
+
   mobileSidenavOpened = false;
   year: string = moment().format('YYYY');
   constructor(
+    private store: Store<AppState>,
     public router: Router,
     public sidenav: SidenavService,
     public translate: TranslateService,
     public auth: AuthService,
     public electronService: ElectronService,
   ) {
+    this.message$ = this.store.select('message');
     translate.addLangs(config.langs.map((value: any) => value.value));
     translate.setDefaultLang('en');
     if (
@@ -56,5 +67,12 @@ export class AppComponent {
 
   getRouterOutletState(outlet: RouterOutlet): any {
     return outlet.isActivated ? outlet.activatedRoute : '';
+  }
+
+  spanishMessage(){
+    this.store.dispatch({type: 'SPANISH'});
+  }
+  frenchMessage(){
+    this.store.dispatch({type: 'FRENCH'});
   }
 }
